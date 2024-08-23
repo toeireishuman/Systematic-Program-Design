@@ -1,0 +1,4 @@
+[ZoneTransfer]
+ZoneId=3
+ReferrerUrl=https://courses.edx.org/
+HostUrl=https://s3.amazonaws.com/edx-course-spdx-kiczales/HTC/double-error-starter.rkt
