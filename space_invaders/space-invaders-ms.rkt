@@ -271,6 +271,39 @@
 ;; The controls include:
 ;;  - "left" -> (game-dir g) = -1
 ;;  - "right" -> (game-dir g) = 1
-;;  - no key press or any other key -> (game-dir g) = 0
-;; !!!
-(define (handle-controls g ke) ...)
+;;  - spacebar -> tank launches missiles
+;;  - no key press or any other key -> (game-dir g) = 0 and no missiles
+(check-expect (handle-controls (make-game empty empty (make-tank 64 0)) "a")
+              (make-game empty empty (make-tank 64 0)))
+(check-expect (handle-controls (make-game empty empty (make-tank 100 0)) " ")
+              (make-game empty (cons (make-missile 100 TANK-YPOS) empty) (make-tank 100 0)))
+(check-expect (handle-controls (make-game empty
+                                          (list (make-missile 54 100) (make-missile 14 99))
+                                          (make-tank 100 0))
+                               " ")
+              (make-game empty
+                         (cons (make-missile 100 TANK-YPOS)
+                               (list (make-missile 54 100) (make-missile 14 99)))
+                         (make-tank 100 0)))
+(check-expect (handle-controls (make-game empty empty (make-tank 111 0)) "left")
+              (make-game empty empty (make-tank 111 -1)))
+(check-expect (handle-controls (make-game empty empty (make-tank 64 0)) "right")
+              (make-game empty empty (make-tank 64 1)))
+
+;(define (handle-controls g ke) g)
+
+;<Template from KeyEvent>
+
+(define (handle-controls g ke)
+  (cond [(key=? ke " ") (make-game (game-invaders g)
+                                   (cons (make-missile (tank-x (game-tank g)) TANK-YPOS)
+                                         (game-missiles g))
+                                   (game-tank g))]
+        [(key=? ke "left") (make-game (game-invaders g)
+                                      (game-missiles g)
+                                      (make-tank (tank-x (game-tank g)) -1))]
+        [(key=? ke "right") (make-game (game-invaders g)
+                                       (game-missiles g)
+                                       (make-tank (tank-x (game-tank g)) 1))]
+        [else 
+         g]))
