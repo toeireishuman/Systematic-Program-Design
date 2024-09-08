@@ -144,8 +144,49 @@
 ;; Game -> Game
 ;; Produce the next state of the game and
 ;; handle the logic of all the game elements.
+(check-expect (next-game (make-game (list (make-invader 54 99 INVADER-X-SPEED)
+                                          (make-invader 110 241 INVADER-X-SPEED)
+                                          (make-invader 154 284 INVADER-X-SPEED)
+                                          (make-invader 281 405 INVADER-X-SPEED))
+                                    (list (make-missile 110 32)
+                                          (make-missile 74 79)
+                                          (make-missile 19 29))
+                                    TANK-START))
+              (make-game (list (make-invader (+ 54 INVADER-X-SPEED)
+                                             (+ 99 INVADER-Y-SPEED)
+                                             INVADER-X-SPEED)
+                               (make-invader (+ 110 INVADER-X-SPEED)
+                                             (+ 241 INVADER-Y-SPEED)
+                                             INVADER-X-SPEED)
+                               (make-invader (+ 154 INVADER-X-SPEED)
+                                             (+ 284 INVADER-Y-SPEED)
+                                             INVADER-X-SPEED)
+                               (make-invader WIDTH
+                                             (+ 405 INVADER-Y-SPEED)
+                                             INVADER-X-SPEED))
+                         (list (make-missile (+ 110 MISSILE-SPEED) 32)
+                               (make-missile (+ 74 MISSILE-SPEED) 79)
+                               (make-missile (+ 19 MISSILE-SPEED) 29))
+                         TANK-START))
+
+;(define (next-game g) g)
+
+(define (next-game g)
+  (make-game (next-invaders (game-invaders g))
+             (next-missiles (game-missiles g))
+             (game-tank g)))
+
+
+;; (listof Invader) -> (listof Invader)
+;; make each invader in the list move for the game
 ;; !!!
-(define (next-game g) ...)
+(define (next-invaders loi) ...)
+
+
+;; (listof Missile) -> (listof Missile)
+;; make each missile in the list move for the game
+;; !!!
+(define (next-missiles lom) ...)
 
 
 ;; Game -> Image
@@ -356,6 +397,9 @@
   (and (<= (abs (- (invader-x i) (tank-x t))) HIT-RANGE)
        (<= (abs (- (invader-y i) TANK-YPOS)) HIT-RANGE)))
 
+
+
+;;;;;;;;;;;; Make the handle-controls move the tank, as well. This function is still not complete.
 
 ;; Game KeyEvent -> Game
 ;; Handle the key inputs from the player.
