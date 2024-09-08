@@ -11,7 +11,7 @@
 
 (define WIDTH  300)
 (define HEIGHT 500)
-(define BACKGROUND (empty-scene WIDTH HEIGHT))
+(define MTS (empty-scene WIDTH HEIGHT))
 
 (define INVADER
   (overlay/xy (ellipse 10 15 "outline" "blue")              ;cockpit cover
@@ -48,10 +48,10 @@
 ;; Game constants defined below Missile data definition
 
 #;
-(define (fn-for-game s)
-  (... (fn-for-loi (game-invaders s))
-       (fn-for-lom (game-missiles s))
-       (fn-for-tank (game-tank s))))
+(define (fn-for-game g)
+  (... (fn-for-loi (game-invaders g))
+       (fn-for-lom (game-missiles g))
+       (fn-for-tank (game-tank g))))
 
 
 
@@ -59,7 +59,6 @@
 ;; Tank is (make-tank Number Integer[-1, 1])
 ;; interp. the tank location is x, HEIGHT - TANK-HEIGHT/2 in screen coordinates
 ;;         the tank moves TANK-SPEED pixels per clock tick left if dir -1, right if dir 1
-
 (define T0 (make-tank (/ WIDTH 2) 1))          ;center going right
 (define T1 (make-tank 50 1))                   ;going right
 (define T2 (make-tank 50 -1))                  ;going left
@@ -111,7 +110,7 @@
 
 ;; (listof Missile) is one of:
 ;;  - empty
-;;  - (list Missile (listof Missile))
+;;  - (cons Missile (listof Missile))
 ;; interp. a list of missiles
 (define LOM1 (list M1 M2 M3))
 
@@ -135,8 +134,8 @@
 ;; Game -> Game
 ;; start the world with (main (make-game empty empty TANK-START)
 ;; 
-(define (main s)
-  (big-bang s                        ; Game
+(define (main g)
+  (big-bang g                        ; Game
     (on-tick   next-game)            ; Game -> Game
     (to-draw   render-game)          ; Game -> Image
     (stop-when game-over)            ; Game -> Boolean
@@ -146,13 +145,106 @@
 ;; Produce the next state of the game and
 ;; handle the logic of all the game elements.
 ;; !!!
-(define (next-game s) ...)
+(define (next-game g) ...)
 
 
 ;; Game -> Image
 ;; Render all the game elements on the screen.
-;; !!!
-(define (render-game s) ...)
+(check-expect (render-game (make-game (list (make-invader 44 109 INVADER-X-SPEED)
+                                            (make-invader 100 251 INVADER-X-SPEED)
+                                            (make-invader 144 294 INVADER-X-SPEED)
+                                            (make-invader 271 415 INVADER-X-SPEED))
+                                      (list (make-missile 100 42)
+                                            (make-missile 64 89)
+                                            (make-missile 9 10))
+                                      TANK-START))
+              (place-image INVADER 44 109
+                           (place-image INVADER 100 251
+                                        (place-image INVADER 144 294
+                                                     (place-image INVADER 271 415
+                                                                  (place-image MISSILE 100 42
+                                                                               (place-image MISSILE 64 89
+                                                                                            (place-image MISSILE 9 10
+                                                                                                         (place-image TANK
+                                                                                                                      (tank-x TANK-START)
+                                                                                                                      TANK-YPOS
+                                                                                                                      MTS)))))))))
+
+;(define (render-game g) MTS)
+
+(define (render-game g)
+  (render-invaders (game-invaders g)
+                   (render-missiles (game-missiles g)
+                                    (render-tank (game-tank g)
+                                                 MTS))))
+
+
+;; Tank Image -> Image
+;; render the tank on the given image based on
+;; its x position and default y position
+(check-expect (render-tank (make-tank 64 -1) MTS)
+              (place-image TANK 64 TANK-YPOS MTS))
+
+;(define (render-tank t i) MTS)
+
+;<Template from Tank with added parameter, Image>
+
+(define (render-tank t i)
+  (place-image TANK (tank-x t) TANK-YPOS i))
+
+
+;; (listof Missile) Image -> Image
+;; render the given missiles on the given image
+;; based on their respective x- and y- positions
+(check-expect (render-missiles empty MTS) MTS)
+(check-expect (render-missiles (list (make-missile 100 289)) MTS)
+              (place-image MISSILE 100 289 MTS))
+(check-expect (render-missiles (list (make-missile 167 169)
+                                     (make-missile 56 341)
+                                     (make-missile 214 418)) MTS)
+              (place-image MISSILE 167 169
+                           (place-image MISSILE 56 341
+                                        (place-image MISSILE 214 418 MTS))))
+
+;(define (render-missiles lom i) i)
+
+;<Template from (listof Missile) with added parameter, Image>
+
+(define (render-missiles lom i)
+  (cond [(empty? lom) i]
+        [else
+         (place-image MISSILE
+                      (missile-x (first lom))
+                      (missile-y (first lom))
+                      (render-missiles (rest lom) i))]))
+
+
+;; (listof Invader) Image -> Image
+;; render the given invaders on the given image
+;; based on their respective x- and y- positions
+(check-expect (render-invaders empty MTS) MTS)
+(check-expect (render-invaders (list (make-invader 100 101 INVADER-X-SPEED))
+                               MTS)
+              (place-image INVADER 100 101 MTS))
+(check-expect (render-invaders (list (make-invader 57 195 INVADER-X-SPEED)
+                                     (make-invader 197 315 INVADER-X-SPEED)
+                                     (make-invader 214 441 INVADER-X-SPEED))
+                               MTS)
+              (place-image INVADER 57 195
+                           (place-image INVADER 197 315
+                                        (place-image INVADER 214 441 MTS))))
+
+;(define (render-invaders loi i) i)
+
+;<Template from (listof Invader) with added parameter, Image>
+
+(define (render-invaders loi i)
+  (cond [(empty? loi) i]
+        [else
+         (place-image INVADER
+                      (invader-x (first loi))
+                      (invader-y (first loi))
+                      (render-invaders (rest loi) i))]))
 
 
 ;; Game -> Boolean
@@ -263,7 +355,6 @@
 (define (invader-hit-tank? i t)
   (and (<= (abs (- (invader-x i) (tank-x t))) HIT-RANGE)
        (<= (abs (- (invader-y i) TANK-YPOS)) HIT-RANGE)))
-
 
 
 ;; Game KeyEvent -> Game
