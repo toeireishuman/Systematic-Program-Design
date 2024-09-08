@@ -178,30 +178,44 @@
 ;(define (game-over g) false)
 
 (define (game-over g)
-  (or (invaders-past-tank? (game-invaders g) (game-tank g))
+  (or (invaders-past-tank? (game-invaders g))
       (invaders-hit-tank? (game-invaders g) (game-tank g))))
 
 
-;; (listof Invader) Tank -> Boolean
+;; (listof Invader) -> Boolean
 ;; Return true if any invader in the list is
 ;; on or past the screen's bottom side,
 ;; passing the tank
-(check-expect (invaders-past-tank? empty (make-tank 100 -1))
+(check-expect (invaders-past-tank? empty)
               false)
 (check-expect (invaders-past-tank? (list (make-invader 1 1 INVADER-X-SPEED)
                                          (make-invader 100 HEIGHT INVADER-X-SPEED)
-                                         (make-invader 49 (+ HEIGHT 1) INVADER-X-SPEED))
-                                   (make-tank 64 1))
+                                         (make-invader 49 (+ HEIGHT 1) INVADER-X-SPEED)))
               true)
 
-(define (invaders-past-tank? loi t) false)
+;(define (invaders-past-tank? loi) false)
 
+(define (invaders-past-tank? loi)
+  (cond [(empty? loi) false]
+        [else
+         (if (invader-past-tank? (first loi))
+             true
+             (invaders-past-tank? (rest loi)))]))
 
-;; Invader Tank -> Boolean
+;; Invader -> Boolean
 ;; Return true if the given invader is
 ;; on or past the screen's bottom side
-;; !!!
-(define (invader-past-tank loi t) ...)
+(check-expect (invader-past-tank? (make-invader 2 100 INVADER-X-SPEED))
+              false)
+(check-expect (invader-past-tank? (make-invader 44 HEIGHT INVADER-X-SPEED))
+              true)
+(check-expect (invader-past-tank? (make-invader 98 (+ HEIGHT 1) INVADER-X-SPEED))
+              true)
+
+;(define (invader-past-tank? loi t) false)
+
+(define (invader-past-tank? i)
+  (>= (invader-y i) HEIGHT))
 
 
 ;; (listof Invader) Tank -> Boolean
@@ -209,10 +223,10 @@
 ;; within the hit range of the tank
 (check-expect (invaders-hit-tank? empty (make-tank 200 1)) false)
 (check-expect (invaders-hit-tank? (list (make-invader 50 50 INVADER-X-SPEED)
-                                         (make-invader 111 TANK-YPOS INVADER-X-SPEED)
-                                         (make-invader (- 111 2) (- TANK-YPOS 2) INVADER-X-SPEED)
-                                         (make-invader (- 111 HIT-RANGE) (- TANK-YPOS HIT-RANGE) INVADER-X-SPEED))
-                                   (make-tank 111 0))
+                                        (make-invader 111 TANK-YPOS INVADER-X-SPEED)
+                                        (make-invader (- 111 2) (- TANK-YPOS 2) INVADER-X-SPEED)
+                                        (make-invader (- 111 HIT-RANGE) (- TANK-YPOS HIT-RANGE) INVADER-X-SPEED))
+                                  (make-tank 111 0))
               true)
 
 ;(define (invaders-hit-tank? loi t) false)
@@ -244,9 +258,12 @@
 
 ;(define (invader-hit-tank? i t) false)
 
+;<Template from Invader with added parameter, Tank>
+
 (define (invader-hit-tank? i t)
   (and (<= (abs (- (invader-x i) (tank-x t))) HIT-RANGE)
        (<= (abs (- (invader-y i) TANK-YPOS)) HIT-RANGE)))
+
 
 
 ;; Game KeyEvent -> Game
