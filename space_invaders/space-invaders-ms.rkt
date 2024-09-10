@@ -184,26 +184,38 @@
 
 ;; (listof Invader) -> (listof Invader)
 ;; handle the game logic for the invaders
-(check-random (next-invaders empty) empty)
+(check-random (next-invaders empty)
+              (append (if (>= (random 100) 50)
+                          (list (make-invader (random (+ XLIMIT-R 1))
+                                              0
+                                              (if (= (random 2) 1)
+                                                  INVADER-X-SPEED
+                                                  (- INVADER-X-SPEED))))
+                          empty)
+                      empty))
 (check-random (next-invaders (list (make-invader 54 99 INVADER-X-SPEED)
                                    (make-invader 110 241 INVADER-X-SPEED)
                                    (make-invader 154 284 INVADER-X-SPEED)
-                                   (make-invader 281 405 INVADER-X-SPEED)))
-              (list (make-invader 114
-                                  0
-                                  INVADER-X-SPEED)
-                    (make-invader (+ 54 INVADER-X-SPEED)
-                                  (+ 99 INVADER-Y-SPEED)
-                                  INVADER-X-SPEED)
-                    (make-invader (+ 110 INVADER-X-SPEED)
-                                  (+ 241 INVADER-Y-SPEED)
-                                  INVADER-X-SPEED)
-                    (make-invader (+ 154 INVADER-X-SPEED)
-                                  (+ 284 INVADER-Y-SPEED)
-                                  INVADER-X-SPEED)
-                    (make-invader WIDTH
-                                  (+ 405 INVADER-Y-SPEED)
-                                  INVADER-X-SPEED)))
+                                   (make-invader 181 405 INVADER-X-SPEED)))
+              (append (if (>= (random 100) 50)
+                          (list (make-invader (random (+ XLIMIT-R 1))
+                                              0
+                                              (if (= (random 2) 1)
+                                                  INVADER-X-SPEED
+                                                  (- INVADER-X-SPEED))))
+                          empty)
+                      (list (make-invader (+ 54 INVADER-X-SPEED)
+                                          (+ 99 INVADER-Y-SPEED)
+                                          INVADER-X-SPEED)
+                            (make-invader (+ 110 INVADER-X-SPEED)
+                                          (+ 241 INVADER-Y-SPEED)
+                                          INVADER-X-SPEED)
+                            (make-invader (+ 154 INVADER-X-SPEED)
+                                          (+ 284 INVADER-Y-SPEED)
+                                          INVADER-X-SPEED)
+                            (make-invader (+ 181 INVADER-X-SPEED)
+                                          (+ 405 INVADER-Y-SPEED)
+                                          INVADER-X-SPEED))))
 
 ;(define (next-invaders loi) loi)
 
@@ -378,8 +390,40 @@
 
 ;; (listof Invader) -> (listof Invader)
 ;; create new invaders for the player to kill
-;; !!!
-(define (spawn-invaders loi) ...)
+(check-random (spawn-invaders empty)
+              (if (>= (random 100) 50)
+                  (append (list (make-invader (random (+ XLIMIT-R 1))
+                                              0
+                                              (if (= (random 2) 1)
+                                                  INVADER-X-SPEED
+                                                  (- INVADER-X-SPEED))))
+                          empty)
+                  empty))
+(check-random (spawn-invaders (list (make-invader 100 101 INVADER-X-SPEED)
+                                    (make-invader 64 341 (- INVADER-X-SPEED))))
+              (if (>= (random 100) 50)
+                  (append (list (make-invader (random (+ XLIMIT-R 1))
+                                              0
+                                              (if (= (random 2) 1)
+                                                  INVADER-X-SPEED
+                                                  (- INVADER-X-SPEED))))
+                          (list (make-invader 100 101 INVADER-X-SPEED)
+                                (make-invader 64 341 (- INVADER-X-SPEED))))
+                  (list (make-invader 100 101 INVADER-X-SPEED)
+                        (make-invader 64 341 (- INVADER-X-SPEED)))))
+
+;(define (spawn-invaders loi) loi)
+
+(define (spawn-invaders loi)
+  (if (>= (random 100) 50)
+      (append (list (make-invader (random (+ XLIMIT-R 1))
+                                  0
+                                  (if (= (random 2) 1)
+                                      INVADER-X-SPEED
+                                      (- INVADER-X-SPEED))))
+              loi)
+      loi))
+
 
 
 
