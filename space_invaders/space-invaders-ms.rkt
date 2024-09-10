@@ -30,6 +30,8 @@
 
 (define INVADER-X-SPEED 1.5)  ;speeds (not velocities) in pixels per tick
 (define INVADER-Y-SPEED 1.5)
+(define XLIMIT-L (+ 0 (image-width INVADER)))
+(define XLIMIT-R (- WIDTH (image-width INVADER)))
 (define TANK-SPEED 2)
 (define MISSILE-SPEED 10)
 
@@ -144,7 +146,7 @@
 ;; Game -> Game
 ;; Produce the next state of the game and
 ;; handle the logic of all the game elements.
-(check-expect (next-game (make-game (list (make-invader 54 99 INVADER-X-SPEED)
+(check-random (next-game (make-game (list (make-invader 54 99 INVADER-X-SPEED)
                                           (make-invader 110 241 INVADER-X-SPEED)
                                           (make-invader 154 284 INVADER-X-SPEED)
                                           (make-invader 281 405 INVADER-X-SPEED))
@@ -152,7 +154,10 @@
                                           (make-missile 74 79)
                                           (make-missile 19 29))
                                     TANK-START))
-              (make-game (list (make-invader (+ 54 INVADER-X-SPEED)
+              (make-game (list (make-invader 114
+                                             0
+                                             INVADER-X-SPEED)
+                               (make-invader (+ 54 INVADER-X-SPEED)
                                              (+ 99 INVADER-Y-SPEED)
                                              INVADER-X-SPEED)
                                (make-invader (+ 110 INVADER-X-SPEED)
@@ -178,9 +183,166 @@
 
 
 ;; (listof Invader) -> (listof Invader)
-;; make each invader in the list move for the game
+;; handle the game logic for the invaders
+(check-random (next-invaders empty) empty)
+(check-random (next-invaders (list (make-invader 54 99 INVADER-X-SPEED)
+                                   (make-invader 110 241 INVADER-X-SPEED)
+                                   (make-invader 154 284 INVADER-X-SPEED)
+                                   (make-invader 281 405 INVADER-X-SPEED)))
+              (list (make-invader 114
+                                  0
+                                  INVADER-X-SPEED)
+                    (make-invader (+ 54 INVADER-X-SPEED)
+                                  (+ 99 INVADER-Y-SPEED)
+                                  INVADER-X-SPEED)
+                    (make-invader (+ 110 INVADER-X-SPEED)
+                                  (+ 241 INVADER-Y-SPEED)
+                                  INVADER-X-SPEED)
+                    (make-invader (+ 154 INVADER-X-SPEED)
+                                  (+ 284 INVADER-Y-SPEED)
+                                  INVADER-X-SPEED)
+                    (make-invader WIDTH
+                                  (+ 405 INVADER-Y-SPEED)
+                                  INVADER-X-SPEED)))
+
+;(define (next-invaders loi) loi)
+
+;<Template from Function Composition>
+
+(define (next-invaders loi)
+  (spawn-invaders
+   (filter-invaders
+    (move-invaders loi))))
+
+
+;; (listof Invader) -> (listof Invader)
+;; make all the invaders move towards the player
+;; while shifting left and right
+(check-expect (move-invaders empty) empty)
+(check-expect (move-invaders (list (make-invader (/ WIDTH 2)
+                                                 (/ HEIGHT 2)
+                                                 INVADER-X-SPEED)
+                                   (make-invader (/ WIDTH 2)
+                                                 (/ HEIGHT 2)
+                                                 (- INVADER-X-SPEED))
+                                   (make-invader (- XLIMIT-R (- INVADER-X-SPEED 1))
+                                                 100
+                                                 INVADER-X-SPEED)
+                                   (make-invader (- XLIMIT-L (- INVADER-X-SPEED 1))
+                                                 100
+                                                 (- INVADER-X-SPEED))
+                                   (make-invader XLIMIT-R
+                                                 100
+                                                 INVADER-X-SPEED)
+                                   (make-invader XLIMIT-L
+                                                 100
+                                                 (- INVADER-X-SPEED))))
+              (list (make-invader (+ (/ WIDTH 2) INVADER-X-SPEED)
+                                  (+ (/ HEIGHT 2) INVADER-Y-SPEED)
+                                  INVADER-X-SPEED)
+                    (make-invader (+ (/ WIDTH 2) (- INVADER-X-SPEED))
+                                  (+ (/ HEIGHT 2) INVADER-Y-SPEED)
+                                  (- INVADER-X-SPEED))
+                    (make-invader XLIMIT-R
+                                  (+ 100 INVADER-Y-SPEED)
+                                  INVADER-X-SPEED)
+                    (make-invader XLIMIT-L
+                                  (+ 100 INVADER-Y-SPEED)
+                                  (- INVADER-X-SPEED))
+                    (make-invader XLIMIT-R
+                                  100
+                                  (- INVADER-X-SPEED))
+                    (make-invader XLIMIT-L
+                                  100
+                                  INVADER-X-SPEED)))
+
+;(define (move-invaders loi) loi)
+
+(define (move-invaders loi)
+  (cond [(empty? loi) empty]
+        [else
+         (cons (move-invader (first loi))
+               (move-invaders (rest loi)))]))
+
+;; Invader -> Invader
+;; make the given invader move toward the player
+;; and shifting left and right
+(check-expect (move-invader (make-invader (/ WIDTH 2)
+                                          (/ HEIGHT 2)
+                                          INVADER-X-SPEED))
+              (make-invader (+ (/ WIDTH 2) INVADER-X-SPEED)
+                            (+ (/ HEIGHT 2) INVADER-Y-SPEED)
+                            INVADER-X-SPEED))
+(check-expect (move-invader (make-invader (/ WIDTH 2)
+                                          (/ HEIGHT 2)
+                                          (- INVADER-X-SPEED)))
+              (make-invader (+ (/ WIDTH 2) (- INVADER-X-SPEED))
+                            (+ (/ HEIGHT 2) INVADER-Y-SPEED)
+                            (- INVADER-X-SPEED)))
+(check-expect (move-invader (make-invader (- XLIMIT-R (- INVADER-X-SPEED 1))
+                                          100
+                                          INVADER-X-SPEED))
+              (make-invader XLIMIT-R
+                            (+ 100 INVADER-Y-SPEED)
+                            INVADER-X-SPEED))
+(check-expect (move-invader (make-invader (- XLIMIT-L (- INVADER-X-SPEED 1))
+                                          100
+                                          (- INVADER-X-SPEED)))
+              (make-invader XLIMIT-L
+                            (+ 100 INVADER-Y-SPEED)
+                            (- INVADER-X-SPEED)))
+(check-expect (move-invader (make-invader XLIMIT-R
+                                          100
+                                          INVADER-X-SPEED))
+              (make-invader XLIMIT-R
+                            100
+                            (- INVADER-X-SPEED)))
+(check-expect (move-invader (make-invader XLIMIT-L
+                                          100
+                                          (- INVADER-X-SPEED)))
+              (make-invader XLIMIT-L
+                            100
+                            INVADER-X-SPEED))
+
+;(define (move-invader i) i)
+
+(define (move-invader i)
+  (cond [(or (and (= (invader-x i) XLIMIT-R)
+                  (> (invader-dx i) 0))
+             (and (= (invader-x i) XLIMIT-L)
+                  (< (invader-dx i) 0)))
+         (make-invader (invader-x i)
+                       (invader-y i)
+                       (- (invader-dx i)))]
+        [(and (<= (abs (- XLIMIT-R (invader-x i))) (abs (invader-dx i)))
+              (> (invader-dx i) 0))
+         (make-invader XLIMIT-R
+                       (+ (invader-y i) INVADER-Y-SPEED)
+                       (invader-dx i))]
+        [(and (<= (abs (- XLIMIT-L (invader-x i))) (abs (invader-dx i)))
+              (< (invader-dx i) 0))
+         (make-invader XLIMIT-L
+                       (+ (invader-y i) INVADER-Y-SPEED)
+                       (invader-dx i))]
+        [else
+         (make-invader (+ (invader-x i) (invader-dx i))
+                       (+ (invader-y i) INVADER-Y-SPEED)
+                       (invader-dx i))]))
+
+
+
+;; (listof Invader) -> (listof Invader)
+;; filter out the invaders that are outside
+;; of the screen
 ;; !!!
-(define (next-invaders loi) ...)
+(define (filter-invaders loi) ...)
+
+
+;; (listof Invader) -> (listof Invader)
+;; create new invaders for the player to kill
+;; !!!
+(define (spawn-invaders loi) ...)
+
 
 
 ;; (listof Missile) -> (listof Missile)
