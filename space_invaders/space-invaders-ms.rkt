@@ -330,12 +330,50 @@
                        (invader-dx i))]))
 
 
-
 ;; (listof Invader) -> (listof Invader)
 ;; filter out the invaders that are outside
 ;; of the screen
-;; !!!
-(define (filter-invaders loi) ...)
+(check-expect (filter-invaders empty) empty)
+(check-expect (filter-invaders (list (make-invader 54 99 INVADER-X-SPEED)
+                                     (make-invader 110 241 INVADER-X-SPEED)
+                                     (make-invader 154 284 INVADER-X-SPEED)
+                                     (make-invader 281 405 INVADER-X-SPEED)))
+              (list (make-invader 54 99 INVADER-X-SPEED)
+                    (make-invader 110 241 INVADER-X-SPEED)
+                    (make-invader 154 284 INVADER-X-SPEED)
+                    (make-invader 281 405 INVADER-X-SPEED)))
+(check-expect (filter-invaders (list (make-invader 34 (+ HEIGHT 1) INVADER-X-SPEED)
+                                     (make-invader 54 99 INVADER-X-SPEED)
+                                     (make-invader 110 241 INVADER-X-SPEED)
+                                     (make-invader 190 (+ HEIGHT 1) INVADER-X-SPEED)
+                                     (make-invader 154 284 INVADER-X-SPEED)
+                                     (make-invader 100 (+ HEIGHT 2) INVADER-X-SPEED)
+                                     (make-invader 281 405 INVADER-X-SPEED)))
+              (list (make-invader 54 99 INVADER-X-SPEED)
+                    (make-invader 110 241 INVADER-X-SPEED)
+                    (make-invader 154 284 INVADER-X-SPEED)
+                    (make-invader 281 405 INVADER-X-SPEED)))
+
+;(define (filter-invaders loi) loi)
+
+(define (filter-invaders loi)
+  (cond [(empty? loi) empty]
+        [else
+         (if (inside? (first loi))
+             (cons (first loi) (filter-invaders (rest loi)))
+             (filter-invaders (rest loi)))]))
+
+
+;; Invader -> Boolean
+;; return true if the given invader is within the screen
+(check-expect (inside? (make-invader 100 100 INVADER-X-SPEED)) true)
+(check-expect (inside? (make-invader 200 (+ HEIGHT 1) INVADER-X-SPEED)) false)
+
+;(define (inside? i) false)
+
+(define (inside? i)
+  (<= (invader-y i) HEIGHT))
+
 
 
 ;; (listof Invader) -> (listof Invader)
