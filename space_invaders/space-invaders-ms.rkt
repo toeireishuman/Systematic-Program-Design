@@ -37,7 +37,7 @@
 
 (define HIT-RANGE 10)
 
-(define INVADE-RATE 100)
+(define INVADE-CHANCE 90)
 
 
 ;; Data Definitions:
@@ -134,7 +134,7 @@
 ;; Functions:
 
 ;; Game -> Game
-;; start the world with (main (make-game empty empty TANK-START)
+;; start the world with (main (make-game empty empty TANK-START))
 ;; 
 (define (main g)
   (big-bang g                        ; Game
@@ -148,44 +148,224 @@
 ;; handle the logic of all the game elements.
 (check-random (next-game (make-game (list (make-invader 54 99 INVADER-X-SPEED)
                                           (make-invader 110 241 INVADER-X-SPEED)
+                                          (make-invader 20 20 INVADER-X-SPEED)
                                           (make-invader 154 284 INVADER-X-SPEED)
                                           (make-invader 281 405 INVADER-X-SPEED))
                                     (list (make-missile 110 32)
                                           (make-missile 74 79)
                                           (make-missile 19 29))
                                     TANK-START))
-              (make-game (list (make-invader 114
-                                             0
-                                             INVADER-X-SPEED)
-                               (make-invader (+ 54 INVADER-X-SPEED)
-                                             (+ 99 INVADER-Y-SPEED)
-                                             INVADER-X-SPEED)
-                               (make-invader (+ 110 INVADER-X-SPEED)
-                                             (+ 241 INVADER-Y-SPEED)
-                                             INVADER-X-SPEED)
-                               (make-invader (+ 154 INVADER-X-SPEED)
-                                             (+ 284 INVADER-Y-SPEED)
-                                             INVADER-X-SPEED)
-                               (make-invader WIDTH
-                                             (+ 405 INVADER-Y-SPEED)
-                                             INVADER-X-SPEED))
-                         (list (make-missile (+ 110 MISSILE-SPEED) 32)
-                               (make-missile (+ 74 MISSILE-SPEED) 79)
-                               (make-missile (+ 19 MISSILE-SPEED) 29))
+              (make-game (append (if (>= (random 100) INVADE-CHANCE)
+                                     (list (make-invader (random (+ XLIMIT-R 1))
+                                                         0
+                                                         (if (= (random 2) 1)
+                                                             INVADER-X-SPEED
+                                                             (- INVADER-X-SPEED))))
+                                     empty)
+                                 (list (make-invader (+ 54 INVADER-X-SPEED)
+                                                     (+ 99 INVADER-Y-SPEED)
+                                                     INVADER-X-SPEED)
+                                       (make-invader (+ 110 INVADER-X-SPEED)
+                                                     (+ 241 INVADER-Y-SPEED)
+                                                     INVADER-X-SPEED)
+                                       (make-invader (+ 154 INVADER-X-SPEED)
+                                                     (+ 284 INVADER-Y-SPEED)
+                                                     INVADER-X-SPEED)
+                                       (make-invader XLIMIT-R
+                                                     (+ 405 INVADER-Y-SPEED)
+                                                     INVADER-X-SPEED)))
+                         (list (make-missile 110 (- 32 MISSILE-SPEED))
+                               (make-missile 74 (- 79 MISSILE-SPEED)))
                          TANK-START))
 
 ;(define (next-game g) g)
 
 (define (next-game g)
-  (make-game (next-invaders (game-invaders g))
-             (next-missiles (game-missiles g))
+  (hit-mechanics (make-game (next-invaders (game-invaders g))
+                            (next-missiles (game-missiles g))
+                            (move-tank (game-tank g)))))
+
+;; Game -> Game
+;; erase the missile and invader that "hit" each other
+(check-random (hit-mechanics (make-game (list (make-invader 54 99 INVADER-X-SPEED)
+                                              (make-invader 110 241 INVADER-X-SPEED)
+                                              (make-invader 20 20 INVADER-X-SPEED)
+                                              (make-invader 154 284 INVADER-X-SPEED)
+                                              (make-invader 281 405 INVADER-X-SPEED))
+                                        (list (make-missile 110 32)
+                                              (make-missile 74 79)
+                                              (make-missile 20 20)
+                                              (make-missile 19 29))
+                                        TANK-START))
+              (make-game (list (make-invader 54 99 INVADER-X-SPEED)
+                               (make-invader 110 241 INVADER-X-SPEED)
+                               (make-invader 154 284 INVADER-X-SPEED)
+                               (make-invader 281 405 INVADER-X-SPEED))
+                         (list (make-missile 110 32)
+                               (make-missile 74 79))
+                         TANK-START))
+
+;(define (hit-mechanics g) g)
+
+(define (hit-mechanics g)
+  (make-game (invaders-hit (game-invaders g) (game-missiles g))
+             (missiles-hit (game-missiles g) (game-invaders g))
              (game-tank g)))
+
+;; (listof Invader) (listof Missile) -> (listof Invader)
+;; get rid of invaders that are hit by a missile
+(check-expect (invaders-hit empty
+                            (list (make-missile 10 10)))
+              empty)
+(check-expect (invaders-hit (list (make-invader 10 10 INVADER-X-SPEED))
+                            empty)
+              (list (make-invader 10 10 INVADER-X-SPEED)))
+(check-expect (invaders-hit (list (make-invader 111 111 INVADER-X-SPEED)
+                                  (make-invader 10 10 INVADER-X-SPEED)
+                                  (make-invader 45 100 INVADER-X-SPEED)
+                                  (make-invader 100 100 INVADER-X-SPEED)
+                                  (make-invader 100 64 INVADER-X-SPEED))
+                            (list (make-missile 10 10)
+                                  (make-missile 1 1)
+                                  (make-missile 100 100)))
+              (list (make-invader 111 111 INVADER-X-SPEED)
+                    (make-invader 45 100 INVADER-X-SPEED)
+                    (make-invader 100 64 INVADER-X-SPEED)))
+
+
+;(define (invaders-hit loi lom) loi)
+
+;<Template from (listof Invader) with added parameter, (listof Missile)>
+
+(define (invaders-hit loi lom)
+  (cond [(empty? loi) empty]
+        [else
+         (if (invader-hit? (first loi) lom)
+             (invaders-hit (rest loi) lom)
+             (cons (first loi) (invaders-hit (rest loi) lom)))]))
+
+
+;; Invader (listof Missile) -> Boolean
+;; return true if an invader is hit by
+;; any of the given missiles
+(check-expect (invader-hit? (make-invader 100 100 INVADER-X-SPEED)
+                            empty)
+              false)
+(check-expect (invader-hit? (make-invader 100 100 INVADER-X-SPEED)
+                            (list (make-missile 10 10)
+                                  (make-missile 150 107)
+                                  (make-missile 78 450)))
+              false)
+(check-expect (invader-hit? (make-invader 100 100 INVADER-X-SPEED)
+                            (list (make-missile 10 10)
+                                  (make-missile 150 107)
+                                  (make-missile 100 100)
+                                  (make-missile 78 450)))
+              true)
+
+;(define (invader-hit? i lom) false)
+
+;<Template from (listof Missile) with added parameter, Invader>
+
+(define (invader-hit? i lom)
+  (cond [(empty? lom) false]
+        [else
+         (if (invader-missile-hit? i (first lom))
+             true
+             (invader-hit? i (rest lom)))]))
+
+
+;; (listof Invader) (listof Missile) -> (listof Missile)
+;; get rid of missiles that hit an invader
+(check-expect (missiles-hit empty
+                            (list (make-invader 10 10 INVADER-X-SPEED)))
+              empty)
+(check-expect (missiles-hit (list (make-missile 10 11))
+                            empty)
+              (list (make-missile 10 11)))
+(check-expect (missiles-hit (list (make-missile 100 191)
+                                  (make-missile 200 191))
+                            (list (make-invader 10 10 INVADER-X-SPEED)
+                                  (make-invader 20 20 INVADER-X-SPEED)))
+              (list (make-missile 100 191)
+                    (make-missile 200 191)))
+(check-expect (missiles-hit (list (make-missile 100 191)
+                                  (make-missile 10 11)
+                                  (make-missile 20 20)
+                                  (make-missile 200 191))
+                            (list (make-invader 10 10 INVADER-X-SPEED)
+                                  (make-invader 20 20 INVADER-X-SPEED)))
+              (list (make-missile 100 191)
+                    (make-missile 200 191)))
+
+;(define (missiles-hit lom loi) lom)
+
+;<Template from (listof Missile) with added parameter, (listof Invader)>
+
+(define (missiles-hit lom loi)
+  (cond [(empty? lom) empty]
+        [else
+         (if (missile-hit? (first lom) loi)
+             (missiles-hit (rest lom) loi)
+             (cons (first lom) (missiles-hit (rest lom) loi)))]))
+
+
+;; Missile (listof Invader) -> Boolean
+;; return true if the given missile hit any of the given invaders
+(check-expect (missile-hit? (make-missile 11 11)
+                            empty)
+              false)
+(check-expect (missile-hit? (make-missile 11 11)
+                            (list (make-invader 100 100 INVADER-X-SPEED)
+                                  (make-invader 50 54 INVADER-X-SPEED)
+                                  (make-invader 214 89 INVADER-X-SPEED)))
+              false)
+(check-expect (missile-hit? (make-missile 11 11)
+                            (list (make-invader 100 100 INVADER-X-SPEED)
+                                  (make-invader (- 11 (- HIT-RANGE 1)) (+ 11 (- HIT-RANGE 1)) INVADER-X-SPEED)
+                                  (make-invader 50 54 INVADER-X-SPEED)
+                                  (make-invader 214 89 INVADER-X-SPEED)))
+              true)
+
+;(define (missile-hit? m loi) false)
+
+;<Template from (listof Invader) with added parameter, Missile>
+
+(define (missile-hit? m loi)
+  (cond [(empty? loi) false]
+        [else
+         (if (invader-missile-hit? (first loi) m)
+             true
+             (missile-hit? m (rest loi)))]))
+
+
+;; Invader Missile -> Boolean
+;; return true if an invader and a missile
+;; are within each other's hitbox
+(check-expect (invader-missile-hit? (make-invader 10 10 INVADER-X-SPEED)
+                                    (make-missile 100 100))
+              false)
+(check-expect (invader-missile-hit? (make-invader 10 10 INVADER-X-SPEED)
+                                    (make-missile (+ 10 (- HIT-RANGE 1)) (- 10 (- HIT-RANGE 1))))
+              true)
+(check-expect (invader-missile-hit? (make-invader 10 10 INVADER-X-SPEED)
+                                    (make-missile 10 10))
+              true)
+
+;(define (invader-missile-hit? i m) false)
+
+(define (invader-missile-hit? i m)
+  (and (<= (abs (- (invader-x i) (missile-x m)))
+           HIT-RANGE)
+       (<= (abs (- (invader-y i) (missile-y m)))
+           HIT-RANGE)))
+
 
 
 ;; (listof Invader) -> (listof Invader)
 ;; handle the game logic for the invaders
 (check-random (next-invaders empty)
-              (append (if (>= (random 100) 50)
+              (append (if (>= (random 100) INVADE-CHANCE)
                           (list (make-invader (random (+ XLIMIT-R 1))
                                               0
                                               (if (= (random 2) 1)
@@ -197,7 +377,7 @@
                                    (make-invader 110 241 INVADER-X-SPEED)
                                    (make-invader 154 284 INVADER-X-SPEED)
                                    (make-invader 181 405 INVADER-X-SPEED)))
-              (append (if (>= (random 100) 50)
+              (append (if (>= (random 100) INVADE-CHANCE)
                           (list (make-invader (random (+ XLIMIT-R 1))
                                               0
                                               (if (= (random 2) 1)
@@ -371,19 +551,19 @@
 (define (filter-invaders loi)
   (cond [(empty? loi) empty]
         [else
-         (if (inside? (first loi))
+         (if (invader-inside? (first loi))
              (cons (first loi) (filter-invaders (rest loi)))
              (filter-invaders (rest loi)))]))
 
 
 ;; Invader -> Boolean
 ;; return true if the given invader is within the screen
-(check-expect (inside? (make-invader 100 100 INVADER-X-SPEED)) true)
-(check-expect (inside? (make-invader 200 (+ HEIGHT 1) INVADER-X-SPEED)) false)
+(check-expect (invader-inside? (make-invader 100 100 INVADER-X-SPEED)) true)
+(check-expect (invader-inside? (make-invader 200 (+ HEIGHT 1) INVADER-X-SPEED)) false)
 
 ;(define (inside? i) false)
 
-(define (inside? i)
+(define (invader-inside? i)
   (<= (invader-y i) HEIGHT))
 
 
@@ -391,7 +571,7 @@
 ;; (listof Invader) -> (listof Invader)
 ;; create new invaders for the player to kill
 (check-random (spawn-invaders empty)
-              (if (>= (random 100) 50)
+              (if (>= (random 100) INVADE-CHANCE)
                   (append (list (make-invader (random (+ XLIMIT-R 1))
                                               0
                                               (if (= (random 2) 1)
@@ -401,7 +581,7 @@
                   empty))
 (check-random (spawn-invaders (list (make-invader 100 101 INVADER-X-SPEED)
                                     (make-invader 64 341 (- INVADER-X-SPEED))))
-              (if (>= (random 100) 50)
+              (if (>= (random 100) INVADE-CHANCE)
                   (append (list (make-invader (random (+ XLIMIT-R 1))
                                               0
                                               (if (= (random 2) 1)
@@ -415,7 +595,7 @@
 ;(define (spawn-invaders loi) loi)
 
 (define (spawn-invaders loi)
-  (if (>= (random 100) 50)
+  (if (>= (random 100) INVADE-CHANCE)
       (append (list (make-invader (random (+ XLIMIT-R 1))
                                   0
                                   (if (= (random 2) 1)
@@ -429,8 +609,98 @@
 
 ;; (listof Missile) -> (listof Missile)
 ;; make each missile in the list move for the game
-;; !!!
-(define (next-missiles lom) ...)
+;; and filter out missiles outside the screen
+(check-expect (next-missiles (list (make-missile 110 32)
+                                   (make-missile 74 79)
+                                   (make-missile 74 -10)
+                                   (make-missile 19 29)))
+              (list (make-missile 110 (- 32 MISSILE-SPEED))
+                    (make-missile 74 (- 79 MISSILE-SPEED))
+                    (make-missile 19 (- 29 MISSILE-SPEED))))
+
+;(define (next-missiles lom) lom)
+
+(define (next-missiles lom)
+  (filter-missiles (move-missiles lom)))
+
+
+;; (listof Missile) -> (listof Missile)
+;; make the missiles move to the top-side
+(check-expect (move-missiles empty) empty)
+(check-expect (move-missiles (list (make-missile 213 310)
+                                   (make-missile 101 45)
+                                   (make-missile 11 410)))
+              (list (make-missile 213 (- 310 MISSILE-SPEED))
+                    (make-missile 101 (- 45 MISSILE-SPEED))
+                    (make-missile 11 (- 410 MISSILE-SPEED))))
+
+;(define (move-missiles lom) lom)
+
+(define (move-missiles lom)
+  (cond [(empty? lom) empty]
+        [else
+         (cons (move-missile (first lom))
+               (move-missiles (rest lom)))]))
+
+;; Missile -> Missile
+;; make the given missile move by MISSILE-SPEED upward
+(check-expect (move-missile (make-missile 100 100))
+              (make-missile 100 (- 100 MISSILE-SPEED)))
+
+;(define (move-missile m) m)
+
+(define (move-missile m)
+  (make-missile (missile-x m)
+                (- (missile-y m) MISSILE-SPEED)))
+
+
+;; (listof Missile) -> (listof Missile)
+;; filter out the missiles which are outside
+;; of the screen
+(check-expect (filter-missiles empty) empty)
+(check-expect (filter-missiles (list (make-missile 100 101)
+                                     (make-missile 45 -1)
+                                     (make-missile 200 245)
+                                     (make-missile 10 419)))
+              (list (make-missile 100 101)
+                    (make-missile 200 245)
+                    (make-missile 10 419)))
+
+;(define (filter-missiles lom) lom)
+
+(define (filter-missiles lom)
+  (cond [(empty? lom) empty]
+        [else
+         (if (missile-inside? (first lom))
+             (cons (first lom) (filter-missiles (rest lom)))
+             (filter-missiles (rest lom)))]))
+
+
+;; Missile -> Boolean
+;; return true if the given missile is inside the screen
+(check-expect (missile-inside? (make-missile 100 45)) true)
+(check-expect (missile-inside? (make-missile 216 -2)) false)
+
+;(define (missile-inside? m) false)
+
+(define (missile-inside? m)
+  (>= (missile-y m) 0))
+
+
+;; Tank -> Tank
+;; make the tank move given its direction
+(check-expect (move-tank (make-tank 50 0)) (make-tank 50 0))
+(check-expect (move-tank (make-tank 111 -1)) (make-tank (- 111 TANK-SPEED) -1))
+(check-expect (move-tank (make-tank 219 1)) (make-tank (+ 219 TANK-SPEED) 1))
+
+;(define (move-tank t) t)
+
+(define (move-tank t)
+  (cond [(and (> (tank-x t) XLIMIT-L)
+              (< (tank-dir t) 0)) (make-tank (- (tank-x t) TANK-SPEED) -1)]
+        [(and (< (tank-x t) XLIMIT-R)
+              (> (tank-dir t) 0)) (make-tank (+ (tank-x t) TANK-SPEED) 1)]
+        [else t]))
 
 
 ;; Game -> Image
@@ -684,5 +954,6 @@
         [(key=? ke "right") (make-game (game-invaders g)
                                        (game-missiles g)
                                        (make-tank (tank-x (game-tank g)) 1))]
-        [else 
-         g]))
+        [else (make-game (game-invaders g)
+                         (game-missiles g)
+                         (make-tank (tank-x (game-tank g)) 0))]))
