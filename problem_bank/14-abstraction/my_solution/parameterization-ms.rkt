@@ -53,6 +53,16 @@
   (contains? "McGill" los))
 
 
+
+;; produce true if los includes string s
+(check-expect (contains? "UBC" empty) false)
+(check-expect (contains? "UBC" (cons "McGill" empty)) false)
+(check-expect (contains? "UBC" (cons "UBC" empty)) true)
+(check-expect (contains? "UBC" (cons "McGill" (cons "UBC" empty))) true)
+(check-expect (contains? "UBC" (cons "UBC" (cons "McGill" empty))) true)
+(check-expect (contains? "McGill" (cons "UBC" (cons "McGill" empty))) true)
+(check-expect (contains? "Toronto" (cons "UBC" (cons "McGill" empty))) false)
+
 (define (contains? s los)
   (cond [(empty? los) false]
         [else
@@ -99,6 +109,14 @@
 (define (square-roots lon)
   (map2 sqrt lon))
 
+
+
+;; given opr and (list n0 n1 ...), produce (list (opr n0) (opr n1) ...)
+(check-expect (map2 sqr empty) empty)
+(check-expect (map2 sqr (list 4 8)) (list 16 64))
+(check-expect (map2 sqrt (list 25 16 9)) (list 5 4 3))
+(check-expect (map2 abs (list 1 -4 9 -11)) (list 1 4 9 11))
+(check-expect (map2 sub1 (list 1 -4 9 -11)) (list 0 -5 8 -12))
 
 (define (map2 opr lon)
   (cond [(empty? lon) empty]
@@ -147,7 +165,22 @@
 (define (negative-only lon)
   (filter2 negative? lon))
 
+
+
 ;; My solution
+
+
+;; given (list n0 n1 ...) and a predicate test, where
+;; ni is not necessarily a number, produce
+;; a list each ni makes (test ni) produce true
+(check-expect (filter2 positive? empty) empty)
+(check-expect (filter2 positive? (list -1)) empty)
+(check-expect (filter2 negative? (list -1)) (list -1))
+(check-expect (filter2 positive? (list 4 -2 0 10)) (list 4 10))
+(check-expect (filter2 zero? (list (- 4 4) -11 0 63 (sqr 0)))
+              (list 0 0 0))
+(check-expect (filter2 empty? (list (list 1) empty (list 2 4) empty))
+              (list empty empty))
 
 (define (filter2 test lon)
   (cond [(empty? lon) empty]
