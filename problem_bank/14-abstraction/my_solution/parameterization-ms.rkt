@@ -53,7 +53,7 @@
   (contains? "McGill" los))
 
 
-
+;; String (listof String) -> Boolean
 ;; produce true if los includes string s
 (check-expect (contains? "UBC" empty) false)
 (check-expect (contains? "UBC" (cons "McGill" empty)) false)
@@ -110,13 +110,18 @@
   (map2 sqrt lon))
 
 
-
+;; (X -> Y) (listof X) -> (listof Y)
 ;; given opr and (list n0 n1 ...), produce (list (opr n0) (opr n1) ...)
 (check-expect (map2 sqr empty) empty)
 (check-expect (map2 sqr (list 4 8)) (list 16 64))
 (check-expect (map2 sqrt (list 25 16 9)) (list 5 4 3))
 (check-expect (map2 abs (list 1 -4 9 -11)) (list 1 4 9 11))
 (check-expect (map2 sub1 (list 1 -4 9 -11)) (list 0 -5 8 -12))
+(check-expect (map2 string-length (list "hello"
+                                        ""
+                                        "how"
+                                        "hi"))
+              (list 5 0 3 2))
 
 (define (map2 opr lon)
   (cond [(empty? lon) empty]
@@ -169,10 +174,9 @@
 
 ;; My solution
 
-
-;; given (list n0 n1 ...) and a predicate test, where
-;; ni is not necessarily a number, produce
-;; a list each ni makes (test ni) produce true
+;; (X -> Boolean) (listof X) -> (listof X)
+;; filter list to contain only those elements
+;; for which test produces true
 (check-expect (filter2 positive? empty) empty)
 (check-expect (filter2 positive? (list -1)) empty)
 (check-expect (filter2 negative? (list -1)) (list -1))
