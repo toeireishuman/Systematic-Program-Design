@@ -114,7 +114,25 @@
     (solve--board b)))
 
 
+;; Board -> Boolean
+;; Given a TAT board, return true if it is solved.
+;; A tents-and-trees puzzle is solved iff:
+;;     - the number of tents correspond with the number of tents specified in numtents,
+;;     - for every tree, there is a corresponding tent,
+;;     - a tent cannot be adjacent to another tent vertically, horizontally, or diagonally.
+;; !!!
+(define (solved? b) false)
 
+
+;; Board -> (listof Board)
+;; Given a TAT board, return a list of all possible next board.
+;; Among the next boards, keep only those that are valid.
+;; A tents-and-trees puzzle is valid iff:
+;;     - the number of tents correspond with the number of tents specified in numtents,
+;;     - for every tree, there is a corresponding tent,
+;;     - a tent cannot be adjacent to another tent vertically, horizontally, or diagonally.
+;; !!!
+(define (next-boards b) empty)
 
 
 ;; https://www.brainbashers.com/tents.asp
