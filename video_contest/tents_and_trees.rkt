@@ -15,20 +15,26 @@
 ;; ---- Constant Definitions ----
 
 (define TAT6EASY-P1
-  (list 0 0 0 1 0 0
-        1 0 0 1 0 0
+  (list 1 0 1 0 0 0
         0 0 0 0 1 0
-        0 1 0 0 0 0
-        0 0 0 0 0 1
-        0 0 0 1 0 0))
+        0 0 1 0 0 0
+        1 0 0 1 0 0
+        0 0 0 0 0 0
+        0 0 0 0 1 0))
+
+(define TAT6EASY-COL1
+  (list 1 2 0 2 1 1))
+
+(define TAT6EASY-ROW1
+  (list 2 0 2 0 2 1))
 
 (define TAT6EASY-S1
-  (list 2 0 0 1 2 0
+  (list 1 2 1 2 0 0
+        0 0 0 0 1 0
+        0 2 1 0 2 0
         1 0 0 1 0 0
-        0 0 0 2 1 2
-        2 1 0 0 0 0
-        0 0 0 0 0 1
-        0 0 2 1 0 2))
+        2 0 0 2 0 0
+        0 0 0 0 1 2))
 
 ;; ---- Data Definitions ----
 
@@ -46,32 +52,66 @@
 ;; interp. a 0-based indexed position on a TAT board
 
 
-(define-struct numtents (ntent_row ntent_col))
+(define-struct numtents (ntent_col ntent_row))
 ;; NumTents is (make-numtents (listof Natural[0, (board-side-length board))
 ;;                            (listof Natural[0, (board-side-length board)))
 ;; interp. (make-numtents ntent-row ntent-col) is a specification for the number
-;;          of tents that a column or row should have. Numtrees is better understood
+;;          of tents that a column or row should have. NumTents is better understood
 ;;          visually like this:
-;;          (make-numtents (list     r_0 r_1 ... r_n)
-;;                         (list c_0
-;;                               c_1
+;;          (make-numtents (list     c_0 c_1 ... c_n)
+;;                         (list r_0
+;;                               r_1
 ;;                               ...
-;;                               c_n))
-;;          with i as the row number and j as the column number,
-;;           - r_i represents the number of tents in row i, and
-;;           - c_j represents the number of tents in column j.
+;;                               r_n))
+;;          with i as the column number and j as the row number,
+;;           - c_i represents the number of tents in column i, and
+;;           - r_j represents the number of tents in row j.
 
 
-(define-struct board (side-length lop lov nt))
+(define-struct board (sl lop lov nt))
 ;; Board is (make-board Natural[5, 20] (listof Position) (listof Value) NumTents)
-;; interp. (make-board side-length lop lov nt) is a TAT board, with the properties:
-;;         - side-length is the length of the board's side,
+;; interp. (make-board sl lop lov nt) is a TAT board, with the properties:
+;;         - sl is the length of the board's side,
 ;;         - lop is the flat list of all positions,
 ;;         - lov is the arrangement of all values, provided as a flat list, corresponding with lop, and
 ;;         - nt is the specification of the numer of tents each row and column must have.
 
 
 ;; ---- Function Defintions ----
+
+;; Board -> Board or false
+;; Given an unsolved TAT board, return either the solved TAT board
+;; or false if the given board is unsolvable.
+(check-expect (solve (make-board 6
+                                 (build-list (sqr 6) identity)
+                                 TAT6EASY-P1
+                                 (make-numtents TAT6EASY-COL1
+                                                TAT6EASY-ROW1)))
+              (make-board 6
+                          (build-list (sqr 6) identity)
+                          TAT6EASY-S1
+                          (make-numtents TAT6EASY-COL1
+                                         TAT6EASY-ROW1)))
+
+;(define (solve b) false)
+
+
+(define (solve b)
+  
+  (local [(define (solve--board b)
+            (if (solved? b)
+                b
+                (solve--lob (next-boards b))))
+
+          (define (solve--lob lob)
+            (cond [(empty? lob) false]
+                  [else
+                   (local [(define try (solve--board (first lob)))]
+                     (if (not (false? try))
+                         try
+                         (solve--lob (rest lob))))]))]
+    
+    (solve--board b)))
 
 
 
