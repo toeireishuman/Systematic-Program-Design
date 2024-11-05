@@ -334,8 +334,29 @@
 ;; Given a row r, column c, side length n, a value k, and a list of elements
 ;; (where this list can be visualized as an n-by-n array of elements), return
 ;; the given list with the value k inserted at row position r and column position c.
-;; !!!
-(define (write-list-rc r c n k lox) lox)
+(check-expect (write-list 1 1 7 1 (build-list (* 7 7) (λ (p) 0)))
+              (list 0 0 0 0 0 0 0
+                    0 1 0 0 0 0 0
+                    0 0 0 0 0 0 0
+                    0 0 0 0 0 0 0
+                    0 0 0 0 0 0 0
+                    0 0 0 0 0 0 0
+                    0 0 0 0 0 0 0))
+
+;(define (write-list r c n k lox) lox)
+
+(define (write-list r c n k lox)
+  (local [(define position
+            (rc->position r c n))
+
+          (define (write-list p k lox)
+            (cond [(empty? lox) empty]
+                  [else
+                   (if (zero? p)
+                       (cons k (rest lox))
+                       (cons (first lox)
+                             (write-list (sub1 p) k (rest lox))))]))]
+    (write-list position k lox)))
 
 ;; https://www.brainbashers.com/tents.asp
 ;; https://www.puzzle-tents.com/
