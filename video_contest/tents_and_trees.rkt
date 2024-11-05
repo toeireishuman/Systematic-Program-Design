@@ -306,5 +306,36 @@
 (define (rc->position r c s)
   (+ (* r s) c))
 
+;; Natural Natural Natural (listof X) -> X or false
+;; Given a row r, column c, side length n, and a list of elements (where this
+;; list can be visualized as an n-by-n array of elements, return the element
+;; at row position r and column position c in this array.
+(check-expect (read-list 1 1 4 (list 0 0 0 0
+                                     0 1 0 0
+                                     0 0 0 0
+                                     0 0 0 0))
+              1)
+
+;(define (read-list r c n lox) 0)
+
+(define (read-list r c n lox)
+  (local [(define position
+           (rc->position r c n))
+
+          (define (read-list p lox)
+            (cond [(empty? lox) false]
+                  [else
+                   (if (= p position)
+                       (first lox)
+                       (read-list (add1 p) (rest lox)))]))]
+    (read-list 0 lox)))
+
+;; Natural Natural Natural X (listof X) -> (listof X)
+;; Given a row r, column c, side length n, a value k, and a list of elements
+;; (where this list can be visualized as an n-by-n array of elements), return
+;; the given list with the value k inserted at row position r and column position c.
+;; !!!
+(define (write-list-rc r c n k lox) lox)
+
 ;; https://www.brainbashers.com/tents.asp
 ;; https://www.puzzle-tents.com/
