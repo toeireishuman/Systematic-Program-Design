@@ -131,9 +131,63 @@
 ;;     - the number of tents correspond with the number of tents specified in numtents,
 ;;     - for every tree, there is a corresponding tent positioned either horizontally or vertically,
 ;;     - a tent cannot be adjacent to another tent vertically, horizontally, or diagonally.
-;; !!!
-(define (next-boards b) empty)
+(check-expect (next-boards (make-board 6
+                                       (build-list (sqr 6) identity)
+                                       (list 1 0 1 0 0 0
+                                             0 0 0 0 1 0
+                                             0 0 1 0 0 0
+                                             1 0 0 1 0 0
+                                             0 0 0 0 0 0
+                                             0 0 0 0 1 0)
+                                       (make-numtents (list 1 2 0 2 1 1)
+                                                      (list 2 0 2 0 2 1))))
+              (list (make-board 6
+                                (build-list (sqr 6) identity)
+                                (list 1 2 1 0 0 0
+                                      0 0 0 0 1 0
+                                      0 0 1 0 0 0
+                                      1 0 0 1 0 0
+                                      0 0 0 0 0 0
+                                      0 0 0 0 1 0)
+                                (make-numtents (list 1 2 0 2 1 1)
+                                               (list 2 0 2 0 2 1)))))
+(check-expect (next-boards (make-board 6
+                                       (build-list (sqr 6) identity)
+                                       (list 1 2 1 2 0 0
+                                             0 0 0 0 1 0
+                                             0 2 1 0 2 0
+                                             1 0 0 1 0 0
+                                             2 0 0 0 0 0
+                                             0 0 0 0 1 0)
+                                       (make-numtents (list 1 2 0 2 1 1)
+                                                      (list 2 0 2 0 2 1))))
+              (make-board 6
+                          (build-list (sqr 6) identity)
+                          (list 1 2 1 2 0 0
+                                0 0 0 0 1 0
+                                0 2 1 0 2 0
+                                1 0 0 1 0 0
+                                2 0 0 2 0 0
+                                0 0 0 0 1 0)
+                          (make-numtents (list 1 2 0 2 1 1)
+                                         (list 2 0 2 0 2 1))))
 
+;(define (next-boards b) empty)
+
+(define (next-boards b)
+  (only-valid-boards (next-possible-boards b)))
+
+
+;; Board -> (listof Board)
+;; Given a TAT board, return a list of all possible next board.
+;; !!!
+(define (next-possible-boards b) empty)
+
+
+;; (listof Board) -> (listof Board)
+;; Given a list of boards, return a list of only valid boards.
+;; !!!
+(define (only-valid-boards lob) empty)
 
 ;; https://www.brainbashers.com/tents.asp
 ;; https://www.puzzle-tents.com/
