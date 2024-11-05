@@ -261,8 +261,9 @@
                                 (make-numtents (list 1 2 0 2 1 1)
                                                (list 2 0 2 0 2 1)))))
 
-;(define (next-possible-boards b) empty)
+(define (next-possible-boards b) empty)
 
+#;
 (define (next-possible-boards b)
   (local []
     ()))
@@ -271,6 +272,39 @@
 ;; Given a list of boards, return a list of only valid boards.
 ;; !!!
 (define (only-valid-boards lob) empty)
+
+;; ---- Board Methods ----
+
+;; Position Natural -> Natural
+;; Given a position and the board's side length, return the position's row.
+(check-expect (position->row 11 5) 2)
+(check-expect (position->row 64 10) 6)
+
+;(define (position->row p s) 0)
+
+(define (position->row p s)
+  (quotient p s))
+
+;; Position Natural -> Natural
+;; Given a position and the board's side length, return the position's column.
+(check-expect (position->column 11 5) 1)
+(check-expect (position->column 64 10) 4)
+
+;(define (position->column p s) 0)
+
+(define (position->column p s)
+  (remainder p s))
+
+;; Natural Natural Natural -> Position
+;; Given a row, a column, and the board's side length, return the position.
+(check-expect (rc->position 1 1 11) 12)
+(check-expect (rc->position 2 1 5) 11)
+(check-expect (rc->position 6 4 10) 64)
+
+;(define (rc->position r c s) 0)
+
+(define (rc->position r c s)
+  (+ (* r s) c))
 
 ;; https://www.brainbashers.com/tents.asp
 ;; https://www.puzzle-tents.com/
