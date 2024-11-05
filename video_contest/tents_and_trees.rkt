@@ -118,7 +118,7 @@
 ;; Given a TAT board, return true if it is solved.
 ;; A tents-and-trees puzzle is solved iff:
 ;;     - the number of tents correspond with the number of tents specified in numtents,
-;;     - for every tree, there is a corresponding tent,
+;;     - for every tree, there is a corresponding tent positioned either horizontally or vertically,
 ;;     - a tent cannot be adjacent to another tent vertically, horizontally, or diagonally.
 ;; !!!
 (define (solved? b) false)
@@ -129,7 +129,7 @@
 ;; Among the next boards, keep only those that are valid.
 ;; A tents-and-trees puzzle is valid iff:
 ;;     - the number of tents correspond with the number of tents specified in numtents,
-;;     - for every tree, there is a corresponding tent,
+;;     - for every tree, there is a corresponding tent positioned either horizontally or vertically,
 ;;     - a tent cannot be adjacent to another tent vertically, horizontally, or diagonally.
 ;; !!!
 (define (next-boards b) empty)
