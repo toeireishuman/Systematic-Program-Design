@@ -161,16 +161,16 @@
                                              0 0 0 0 1 0)
                                        (make-numtents (list 1 2 0 2 1 1)
                                                       (list 2 0 2 0 2 1))))
-              (make-board 6
-                          (build-list (sqr 6) identity)
-                          (list 1 2 1 2 0 0
-                                0 0 0 0 1 0
-                                0 2 1 0 2 0
-                                1 0 0 1 0 0
-                                2 0 0 2 0 0
-                                0 0 0 0 1 0)
-                          (make-numtents (list 1 2 0 2 1 1)
-                                         (list 2 0 2 0 2 1))))
+              (list (make-board 6
+                                (build-list (sqr 6) identity)
+                                (list 1 2 1 2 0 0
+                                      0 0 0 0 1 0
+                                      0 2 1 0 2 0
+                                      1 0 0 1 0 0
+                                      2 0 0 2 0 0
+                                      0 0 0 0 1 0)
+                                (make-numtents (list 1 2 0 2 1 1)
+                                               (list 2 0 2 0 2 1)))))
 
 ;(define (next-boards b) empty)
 
@@ -180,9 +180,92 @@
 
 ;; Board -> (listof Board)
 ;; Given a TAT board, return a list of all possible next board.
-;; !!!
-(define (next-possible-boards b) empty)
+(check-expect (next-possible-boards (make-board 6
+                                                (build-list (sqr 6) identity)
+                                                (list 1 0 1 0 0 0
+                                                      0 0 0 0 1 0
+                                                      0 0 1 0 0 0
+                                                      1 0 0 1 0 0
+                                                      0 0 0 0 0 0
+                                                      0 0 0 0 1 0)
+                                                (make-numtents (list 1 2 0 2 1 1)
+                                                               (list 2 0 2 0 2 1))))
+              (list (make-board 6
+                                (build-list (sqr 6) identity)
+                                (list 1 2 1 0 0 0
+                                      0 0 0 0 1 0
+                                      0 0 1 0 0 0
+                                      1 0 0 1 0 0
+                                      0 0 0 0 0 0
+                                      0 0 0 0 1 0)
+                                (make-numtents (list 1 2 0 2 1 1)
+                                               (list 2 0 2 0 2 1)))
+                    (make-board 6
+                                (build-list (sqr 6) identity)
+                                (list 1 0 1 0 0 0
+                                      2 0 0 0 1 0
+                                      0 0 1 0 0 0
+                                      1 0 0 1 0 0
+                                      0 0 0 0 0 0
+                                      0 0 0 0 1 0)
+                                (make-numtents (list 1 2 0 2 1 1)
+                                               (list 2 0 2 0 2 1)))))
+(check-expect (next-possible-boards (make-board 6
+                                                (build-list (sqr 6) identity)
+                                                (list 1 2 1 2 0 0
+                                                      0 0 0 0 1 0
+                                                      0 2 1 0 2 0
+                                                      1 0 0 1 0 0
+                                                      2 0 0 0 0 0
+                                                      0 0 0 0 1 0)
+                                                (make-numtents (list 1 2 0 2 1 1)
+                                                               (list 2 0 2 0 2 1))))
+              (list (make-board 6
+                                (build-list (sqr 6) identity)
+                                (list 1 2 1 2 0 0
+                                      0 0 0 0 1 0
+                                      0 2 1 2 2 0
+                                      1 0 0 1 0 0
+                                      2 0 0 0 0 0
+                                      0 0 0 0 1 0)
+                                (make-numtents (list 1 2 0 2 1 1)
+                                               (list 2 0 2 0 2 1)))
+                    (make-board 6
+                                (build-list (sqr 6) identity)
+                                (list 1 2 1 2 0 0
+                                      0 0 0 0 1 0
+                                      0 2 1 0 2 0
+                                      1 0 2 1 0 0
+                                      2 0 0 0 0 0
+                                      0 0 0 0 1 0)
+                                (make-numtents (list 1 2 0 2 1 1)
+                                               (list 2 0 2 0 2 1)))
+                    (make-board 6
+                                (build-list (sqr 6) identity)
+                                (list 1 2 1 2 0 0
+                                      0 0 0 0 1 0
+                                      0 2 1 0 2 0
+                                      1 0 0 1 0 0
+                                      2 0 0 2 0 0
+                                      0 0 0 0 1 0)
+                                (make-numtents (list 1 2 0 2 1 1)
+                                               (list 2 0 2 0 2 1)))
+                    (make-board 6
+                                (build-list (sqr 6) identity)
+                                (list 1 2 1 2 0 0
+                                      0 0 0 0 1 0
+                                      0 2 1 0 2 0
+                                      1 0 0 1 2 0
+                                      2 0 0 0 0 0
+                                      0 0 0 0 1 0)
+                                (make-numtents (list 1 2 0 2 1 1)
+                                               (list 2 0 2 0 2 1)))))
 
+;(define (next-possible-boards b) empty)
+
+(define (next-possible-boards b)
+  (local []
+    ()))
 
 ;; (listof Board) -> (listof Board)
 ;; Given a list of boards, return a list of only valid boards.
